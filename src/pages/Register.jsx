@@ -4,24 +4,56 @@ import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
   const navigate = useNavigate()
-  const { login, getDashboardPath } = useAuth()
+  const { register, getDashboardPath, setNotice } = useAuth()
   const [form, setForm] = useState({
     name: '',
     email: '',
     role: 'patient',
     password: '',
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    setError('')
   }
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    const nextErrors = {}
+    if (!form.name.trim()) nextErrors.name = 'Name is required.'
+    if (form.name.trim().length < 2) nextErrors.name = 'Name must be at least 2 characters.'
+    if (!form.email.trim()) nextErrors.email = 'Email is required.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Invalid email format.'
+    if (!form.password.trim()) nextErrors.password = 'Password is required.'
+    if (form.password.length < 6) nextErrors.password = 'Password must be at least 6 characters.'
+    setFieldErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    login({ role: form.role, name: form.name, email: form.email })
-    const target = getDashboardPath(form.role)
-    navigate(target)
+    if (!validate()) return
+    setError('')
+    setSubmitting(true)
+    try {
+      const authUser = await register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      })
+      const target = getDashboardPath(authUser.role)
+      navigate(target)
+    } catch (err) {
+      setNotice('Registration failed. Please try again.')
+      setError(err?.message || 'Could not register. Try a different email.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -49,8 +81,8 @@ const Register = () => {
               placeholder="Dr. Jane Doe"
               value={form.name}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.name && <span className="form-error">{fieldErrors.name}</span>}
           </div>
 
           <div className="form-group">
@@ -65,8 +97,8 @@ const Register = () => {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.email && <span className="form-error">{fieldErrors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -99,17 +131,23 @@ const Register = () => {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
           </div>
 
           <div className="form-footer">
-            <button type="submit" className="btn btn-primary">
-              Register
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Registering...' : 'Register'}
             </button>
-            <span className="form-helper">This is a static demo form.</span>
+            <span className="form-helper">Creates account via Spring Boot backend.</span>
           </div>
         </form>
+
+        {error && (
+          <p className="form-helper" style={{ marginTop: '0.75rem', color: '#b91c1c' }}>
+            {error}
+          </p>
+        )}
 
         <p className="auth-footer">
           Already have an account? <Link to="/login">Login</Link>

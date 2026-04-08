@@ -1,21 +1,82 @@
-import { useOutletContext } from 'react-router-dom'
+import { useState } from 'react'
+import { useAppointments } from '../context/AppointmentsContext'
+
+const defaultEditForm = {
+  doctor: '',
+  specialization: '',
+  date: '',
+  time: '',
+  type: '',
+  symptoms: '',
+}
 
 const PatientAppointments = () => {
-  const { appointments, setAppointments } = useOutletContext()
-
-  const cancelAppointment = (id) => {
-    setAppointments(
-      appointments.map((appt) =>
-        appt.id === id ? { ...appt, status: 'Cancelled' } : appt,
-      ),
-    )
-  }
+  const {
+    appointments,
+    loading,
+    error,
+    success,
+    updateAppointment,
+    deleteAppointment,
+    setError,
+    setSuccess,
+  } = useAppointments()
+  const [editingId, setEditingId] = useState(null)
+  const [editForm, setEditForm] = useState(defaultEditForm)
+  const [submitting, setSubmitting] = useState(false)
 
   const statusBadgeClass = (status) => {
     if (status === 'Confirmed') return 'badge badge-success'
     if (status === 'Pending') return 'badge badge-warning'
     if (status === 'Cancelled') return 'badge badge-info'
     return 'badge'
+  }
+
+  const startEdit = (appt) => {
+    setEditingId(appt.id)
+    setEditForm({
+      doctor: appt.doctor,
+      specialization: appt.specialization,
+      date: appt.date,
+      time: appt.time.slice(0, 5),
+      type: appt.type,
+      symptoms: appt.symptoms,
+    })
+    setError('')
+    setSuccess('')
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditForm(defaultEditForm)
+  }
+
+  const saveEdit = async () => {
+    if (!editingId) return
+    if (!editForm.date || !editForm.time || !editForm.symptoms.trim()) {
+      setError('Date, time and symptoms are required for update.')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await updateAppointment(editingId, {
+        doctor: editForm.doctor,
+        specialization: editForm.specialization,
+        appointmentDate: editForm.date,
+        appointmentTime: editForm.time,
+        type: editForm.type,
+        symptoms: editForm.symptoms.trim(),
+      })
+      cancelEdit()
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const remove = async (id) => {
+    const ok = window.confirm('Delete this appointment?')
+    if (!ok) return
+    await deleteAppointment(id)
   }
 
   return (
@@ -33,9 +94,74 @@ const PatientAppointments = () => {
       <section className="card">
         <div className="card-header">
           <h3 className="card-title">Appointments list</h3>
-          <span className="card-meta">Frontend mock data</span>
+          <span className="card-meta">Connected to backend API</span>
         </div>
         <div className="card-body">
+          {loading && <p className="form-helper">Loading appointments...</p>}
+          {success && <p className="form-success">{success}</p>}
+          {error && <p className="form-error">{error}</p>}
+
+          {editingId && (
+            <div className="card" style={{ marginBottom: '0.8rem' }}>
+              <h4 className="card-title" style={{ marginBottom: '0.7rem' }}>
+                Edit appointment
+              </h4>
+              <div className="form-grid">
+                <input
+                  className="form-input"
+                  value={editForm.doctor}
+                  onChange={(e) => setEditForm((p) => ({ ...p, doctor: e.target.value }))}
+                />
+                <input
+                  className="form-input"
+                  value={editForm.specialization}
+                  onChange={(e) =>
+                    setEditForm((p) => ({ ...p, specialization: e.target.value }))
+                  }
+                />
+                <input
+                  className="form-input"
+                  type="date"
+                  value={editForm.date}
+                  onChange={(e) => setEditForm((p) => ({ ...p, date: e.target.value }))}
+                />
+                <input
+                  className="form-input"
+                  type="time"
+                  value={editForm.time}
+                  onChange={(e) => setEditForm((p) => ({ ...p, time: e.target.value }))}
+                />
+                <select
+                  className="form-select"
+                  value={editForm.type}
+                  onChange={(e) => setEditForm((p) => ({ ...p, type: e.target.value }))}
+                >
+                  <option value="Video">Video</option>
+                  <option value="Chat">Chat</option>
+                </select>
+              </div>
+              <textarea
+                className="form-textarea"
+                style={{ marginTop: '0.6rem' }}
+                value={editForm.symptoms}
+                onChange={(e) => setEditForm((p) => ({ ...p, symptoms: e.target.value }))}
+              />
+              <div className="form-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={saveEdit}
+                  disabled={submitting}
+                >
+                  {submitting ? 'Saving...' : 'Save changes'}
+                </button>
+                <button type="button" className="btn btn-outline btn-sm" onClick={cancelEdit}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="table-wrapper">
             <table className="table">
               <thead>
@@ -65,21 +191,16 @@ const PatientAppointments = () => {
                         <button
                           type="button"
                           className="btn btn-sm btn-primary"
-                          onClick={() => {
-                            // UI only – no real video/chat integration
-                            // eslint-disable-next-line no-alert
-                            alert('Joining consultation (demo only).')
-                          }}
+                          onClick={() => startEdit(appt)}
                         >
-                          Join
+                          Edit
                         </button>
                         <button
                           type="button"
                           className="btn btn-sm btn-outline"
-                          disabled={appt.status === 'Cancelled' || appt.status === 'Completed'}
-                          onClick={() => cancelAppointment(appt.id)}
+                          onClick={() => remove(appt.id)}
                         >
-                          Cancel
+                          Delete
                         </button>
                       </div>
                     </td>

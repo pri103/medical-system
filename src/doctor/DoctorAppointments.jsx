@@ -1,7 +1,7 @@
-import { useOutletContext } from 'react-router-dom'
+import { useAppointments } from '../context/AppointmentsContext'
 
 const DoctorAppointments = () => {
-  const { appointments, setAppointments } = useOutletContext()
+  const { appointments, setAppointments } = useAppointments()
 
   const updateStatus = (id, status) => {
     setAppointments(appointments.map((a) => (a.id === id ? { ...a, status } : a)))

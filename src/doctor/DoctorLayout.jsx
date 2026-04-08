@@ -1,17 +1,17 @@
-import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import {
-  initialDoctorAppointments,
-  initialDoctorPatients,
-  initialDoctorPrescriptions,
-  initialDoctorProfile,
-} from './doctorMockData'
+import { DoctorDataProvider, useDoctorData } from '../context/DoctorDataContext'
 
-const DoctorLayout = () => {
-  const [appointments, setAppointments] = useState(initialDoctorAppointments)
-  const [patients] = useState(initialDoctorPatients)
-  const [prescriptions, setPrescriptions] = useState(initialDoctorPrescriptions)
-  const [profile, setProfile] = useState(initialDoctorProfile)
+const DoctorLayoutInner = () => {
+  const {
+    appointments,
+    setAppointments,
+    patients,
+    setPatients,
+    prescriptions,
+    setPrescriptions,
+    profile,
+    setProfile,
+  } = useDoctorData()
 
   return (
     <div className="doctor-shell">
@@ -88,6 +88,12 @@ const DoctorLayout = () => {
     </div>
   )
 }
+
+const DoctorLayout = () => (
+  <DoctorDataProvider>
+    <DoctorLayoutInner />
+  </DoctorDataProvider>
+)
 
 export default DoctorLayout
 

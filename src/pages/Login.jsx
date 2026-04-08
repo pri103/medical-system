@@ -4,19 +4,44 @@ import { useAuth } from '../context/AuthContext'
 
 const Login = () => {
   const navigate = useNavigate()
-  const { login, getDashboardPath } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '', role: 'patient' })
+  const { login, getDashboardPath, setNotice } = useAuth()
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    setError('')
   }
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    const nextErrors = {}
+    if (!form.email.trim()) nextErrors.email = 'Email is required.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Invalid email format.'
+    if (!form.password.trim()) nextErrors.password = 'Password is required.'
+    if (form.password.length < 6) nextErrors.password = 'Password must be at least 6 characters.'
+    setFieldErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    login({ role: form.role, email: form.email })
-    const target = getDashboardPath(form.role)
-    navigate(target)
+    if (!validate()) return
+    setError('')
+    setSubmitting(true)
+    try {
+      const authUser = await login({ email: form.email, password: form.password })
+      const target = getDashboardPath(authUser.role)
+      navigate(target)
+    } catch (err) {
+      setNotice('Login failed. Please check your credentials.')
+      setError(err?.message || 'Invalid email or password')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -44,26 +69,8 @@ const Login = () => {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              required
             />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="role">
-              Role
-            </label>
-            <select
-              id="role"
-              name="role"
-              className="form-select"
-              value={form.role}
-              onChange={handleChange}
-            >
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-              <option value="pharmacist">Pharmacist</option>
-              <option value="admin">Admin</option>
-            </select>
+            {fieldErrors.email && <span className="form-error">{fieldErrors.email}</span>}
           </div>
 
           <div className="form-group">
@@ -78,17 +85,25 @@ const Login = () => {
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
-              required
             />
+            {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
           </div>
 
           <div className="form-footer">
-            <button type="submit" className="btn btn-primary">
-              Login
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Logging in...' : 'Login'}
             </button>
-            <span className="form-helper">Demo-only login. No backend calls.</span>
+            <span className="form-helper">
+              
+            </span>
           </div>
         </form>
+
+        {error && (
+          <p className="form-helper" style={{ marginTop: '0.75rem', color: '#b91c1c' }}>
+            {error}
+          </p>
+        )}
 
         <p className="auth-footer">
           New here? <Link to="/register">Create an account</Link>

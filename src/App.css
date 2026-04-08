@@ -588,6 +588,17 @@
   color: #9ca3af;
 }
 
+.form-error {
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.form-success {
+  font-size: 0.82rem;
+  color: #047857;
+  margin-top: 0.7rem;
+}
+
 /* BUTTONS */
 
 .btn {
@@ -696,10 +707,6 @@
 .table th {
   font-weight: 600;
   color: #4b5563;
-}
-
-.table tbody tr:nth-child(every) {
-  background-color: #ffffff;
 }
 
 .table tbody tr:nth-child(odd) {

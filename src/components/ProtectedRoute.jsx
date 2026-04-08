@@ -1,17 +1,26 @@
+import { useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const ProtectedRoute = ({ allowedRoles, children }) => {
-  const { user, getDashboardPath, setNotice } = useAuth()
+  const { user, loading, getDashboardPath, setNotice } = useAuth()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      setNotice('Please log in to access that page.')
+    }
+  }, [loading, user, setNotice])
+
+  if (loading) {
+    return <div className="page"><p className="form-helper">Checking session...</p></div>
+  }
 
   if (!user) {
-    setNotice('Please log in to access that page.')
-    return <Navigate to="/" replace />
+    return <Navigate to="/login" replace />
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     const target = getDashboardPath(user.role)
-    setNotice('You do not have permission to access that area. Redirected to your dashboard.')
     return <Navigate to={target} replace />
   }
 

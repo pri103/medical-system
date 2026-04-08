@@ -1,22 +1,21 @@
-import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import {
-  initialAppointments,
-  initialPrescriptions,
-  initialRecords,
-  initialLabReports,
-  initialPatientProfile,
-} from './patientMockData'
+import { PatientDataProvider, usePatientData } from '../context/PatientDataContext'
 
-const PatientLayout = () => {
+const PatientLayoutInner = () => {
   const { user } = useAuth()
-
-  const [appointments, setAppointments] = useState(initialAppointments)
-  const [prescriptions] = useState(initialPrescriptions)
-  const [records] = useState(initialRecords)
-  const [labReports] = useState(initialLabReports)
-  const [profile, setProfile] = useState(initialPatientProfile)
+  const {
+    appointments,
+    setAppointments,
+    prescriptions,
+    setPrescriptions,
+    records,
+    setRecords,
+    labReports,
+    setLabReports,
+    profile,
+    setProfile,
+  } = usePatientData()
 
   return (
     <div className="patient-shell">
@@ -107,8 +106,11 @@ const PatientLayout = () => {
               appointments,
               setAppointments,
               prescriptions,
+              setPrescriptions,
               records,
+              setRecords,
               labReports,
+              setLabReports,
               profile,
               setProfile,
             }}
@@ -118,6 +120,12 @@ const PatientLayout = () => {
     </div>
   )
 }
+
+const PatientLayout = () => (
+  <PatientDataProvider>
+    <PatientLayoutInner />
+  </PatientDataProvider>
+)
 
 export default PatientLayout
 

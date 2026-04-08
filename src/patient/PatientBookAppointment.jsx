@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { useAppointments } from '../context/AppointmentsContext'
 
 const PatientBookAppointment = () => {
-  const { appointments, setAppointments } = useOutletContext()
+  const { createAppointment, error, success, setError, setSuccess } = useAppointments()
   const [form, setForm] = useState({
     doctor: 'Dr. Mehta',
     specialization: 'General Physician',
@@ -11,27 +11,46 @@ const PatientBookAppointment = () => {
     type: 'Video',
     symptoms: '',
   })
-  const [confirmation, setConfirmation] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const minDate = useMemo(() => new Date().toISOString().split('T')[0], [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
+    setError('')
+    setSuccess('')
   }
 
-  const handleSubmit = (e) => {
+  const validate = () => {
+    const nextErrors = {}
+    if (!form.date) nextErrors.date = 'Date is required.'
+    if (!form.time) nextErrors.time = 'Time is required.'
+    if (!form.symptoms.trim()) nextErrors.symptoms = 'Symptoms are required.'
+    if (form.symptoms.trim().length < 5) nextErrors.symptoms = 'Enter at least 5 characters.'
+    setFieldErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const newAppointment = {
-      id: appointments.length + 1,
-      ...form,
-      status: 'Pending',
+    if (!validate()) return
+
+    setSubmitting(true)
+    try {
+      await createAppointment({
+        doctor: form.doctor,
+        specialization: form.specialization,
+        appointmentDate: form.date,
+        appointmentTime: form.time,
+        type: form.type,
+        symptoms: form.symptoms.trim(),
+      })
+      setForm((prev) => ({ ...prev, symptoms: '' }))
+    } finally {
+      setSubmitting(false)
     }
-    setAppointments([...appointments, newAppointment])
-    setConfirmation(
-      `Appointment request created with ${form.doctor} on ${form.date || 'N/A'} at ${
-        form.time
-      } (demo only).`,
-    )
-    setForm((prev) => ({ ...prev, symptoms: '' }))
   }
 
   return (
@@ -40,8 +59,7 @@ const PatientBookAppointment = () => {
         <div>
           <h2 className="page-title">Book a virtual appointment</h2>
           <p className="page-subtitle">
-            Choose your doctor, specialisation, time slot, and consultation type. This
-            form updates only local state.
+            Choose doctor, date, time and consultation type to create appointments in MySQL.
           </p>
         </div>
         <div className="badge-pill">Patient • Booking</div>
@@ -100,9 +118,10 @@ const PatientBookAppointment = () => {
                   type="date"
                   className="form-input"
                   value={form.date}
+                  min={minDate}
                   onChange={handleChange}
-                  required
                 />
+                {fieldErrors.date && <span className="form-error">{fieldErrors.date}</span>}
               </div>
 
               <div className="form-group">
@@ -152,25 +171,20 @@ const PatientBookAppointment = () => {
                 placeholder="Briefly describe your symptoms..."
                 value={form.symptoms}
                 onChange={handleChange}
-                required
               />
+              {fieldErrors.symptoms && <span className="form-error">{fieldErrors.symptoms}</span>}
             </div>
 
             <div className="form-footer">
-              <button type="submit" className="btn btn-primary">
-                Submit request
+              <button type="submit" className="btn btn-primary" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit request'}
               </button>
-              <span className="form-helper">
-                This is a front‑end demo. The appointment is stored only in React state.
-              </span>
+              <span className="form-helper">Data is saved via Spring Boot API.</span>
             </div>
           </form>
 
-          {confirmation && (
-            <p className="form-helper" style={{ marginTop: '0.8rem' }}>
-              {confirmation}
-            </p>
-          )}
+          {success && <p className="form-success">{success}</p>}
+          {error && <p className="form-error">{error}</p>}
         </div>
       </section>
     </div>
