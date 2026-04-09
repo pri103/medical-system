@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { api, authStorage } from '../api/api'
+import { loginUser, registerUser, resendOtp, verifyOtp } from '../api/authApi'
 
 const AuthContext = createContext(null)
 
@@ -65,9 +66,15 @@ export const AuthProvider = ({ children }) => {
     bootstrap()
   }, [])
 
-  const login = async ({ email, password }) => {
+  useEffect(() => {
+    if (!notice) return
+    const timer = setTimeout(() => setNotice(''), 4000)
+    return () => clearTimeout(timer)
+  }, [notice])
+
+  const login = async ({ email, password, role }) => {
     setError('')
-    const { data } = await api.post('/api/auth/login', { email, password })
+    const data = await loginUser({ email, password, role: String(role || '').toUpperCase() })
 
     if (!data?.token) {
       throw new Error('Token missing from server response')
@@ -86,27 +93,18 @@ export const AuthProvider = ({ children }) => {
 
   const register = async ({ name, email, password, role }) => {
     setError('')
-    const { data } = await api.post('/api/auth/register', {
+    const data = await registerUser({
       name,
       email,
       password,
-      role: String(role || '').toUpperCase(),
+      role: String(role || 'PATIENT').toUpperCase(),
     })
-
-    if (!data?.token) {
-      throw new Error('Token missing from server response')
-    }
-
-    authStorage.setToken(data.token)
-    const authUser = {
-      email: data.email || email,
-      name: data.name || name,
-      role: normalizeRole(data.role),
-    }
-    localStorage.setItem(USER_KEY, JSON.stringify(authUser))
-    setUser(authUser)
-    return authUser
+    return data
   }
+
+  const verifyRegistrationOtp = async ({ email, otp }) => verifyOtp({ email, otp })
+
+  const resendRegistrationOtp = async (email) => resendOtp(email)
 
   const logout = () => {
     setUser(null)
@@ -135,6 +133,8 @@ export const AuthProvider = ({ children }) => {
       setNotice,
       login,
       register,
+      verifyRegistrationOtp,
+      resendRegistrationOtp,
       logout,
       getDashboardPath,
     }),

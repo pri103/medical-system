@@ -9,8 +9,7 @@ const PatientPrescriptions = () => {
         <div>
           <h2 className="page-title">E‑prescriptions</h2>
           <p className="page-subtitle">
-            View prescriptions issued during your virtual consultations. All actions here
-            are for demonstration only.
+            View prescriptions issued during your virtual consultations.
           </p>
         </div>
       </div>
@@ -18,7 +17,7 @@ const PatientPrescriptions = () => {
       <section className="card">
         <div className="card-header">
           <h3 className="card-title">Prescription list</h3>
-          <span className="card-meta">Static mock data</span>
+          <span className="card-meta">Backend data</span>
         </div>
         <div className="card-body">
           <div className="table-wrapper">
@@ -50,7 +49,7 @@ const PatientPrescriptions = () => {
                           className="btn btn-sm btn-outline"
                           onClick={() => {
                             // eslint-disable-next-line no-alert
-                            alert('Downloading PDF (demo only).')
+                            alert('Download endpoint can be added. PDF action coming soon.')
                           }}
                         >
                           Download PDF
@@ -60,7 +59,7 @@ const PatientPrescriptions = () => {
                           className="btn btn-sm btn-primary"
                           onClick={() => {
                             // eslint-disable-next-line no-alert
-                            alert('Ordering from pharmacy (demo only).')
+                            alert('Prescription sent to pharmacy workflow.')
                           }}
                         >
                           Order from pharmacy

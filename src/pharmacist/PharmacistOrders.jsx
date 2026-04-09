@@ -1,7 +1,8 @@
 import { useOutletContext } from 'react-router-dom'
+import { pharmacistService } from '../api/pharmacistService'
 
 const PharmacistOrders = () => {
-  const { orders, setOrders } = useOutletContext()
+  const { orders, fetchOverview } = useOutletContext()
 
   const cycleStatus = (status) => {
     if (status === 'Preparing') return 'Ready'
@@ -9,10 +10,9 @@ const PharmacistOrders = () => {
     return 'Completed'
   }
 
-  const updateStatus = (id) => {
-    setOrders(
-      orders.map((o) => (o.id === id ? { ...o, status: cycleStatus(o.status) } : o)),
-    )
+  const updateStatus = async (id, status) => {
+    await pharmacistService.updateOrderStatus(id, cycleStatus(status))
+    await fetchOverview()
   }
 
   return (
@@ -22,7 +22,7 @@ const PharmacistOrders = () => {
           <h2 className="page-title">Orders tracking</h2>
           <p className="page-subtitle">
             Track each order&apos;s status and estimated time to readiness. This
-            implementation is front‑end only.
+            workflow is connected to backend APIs.
           </p>
         </div>
       </div>
@@ -52,7 +52,7 @@ const PharmacistOrders = () => {
                       <button
                         type="button"
                         className="btn btn-sm btn-outline"
-                        onClick={() => updateStatus(o.id)}
+                        onClick={() => updateStatus(o.id, o.status)}
                       >
                         Update status
                       </button>

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 const Login = () => {
   const navigate = useNavigate()
   const { login, getDashboardPath, setNotice } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({ email: '', password: '', role: '' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
@@ -21,6 +21,7 @@ const Login = () => {
     const nextErrors = {}
     if (!form.email.trim()) nextErrors.email = 'Email is required.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Invalid email format.'
+    if (!form.role) nextErrors.role = 'Role is required.'
     if (!form.password.trim()) nextErrors.password = 'Password is required.'
     if (form.password.length < 6) nextErrors.password = 'Password must be at least 6 characters.'
     setFieldErrors(nextErrors)
@@ -33,7 +34,7 @@ const Login = () => {
     setError('')
     setSubmitting(true)
     try {
-      const authUser = await login({ email: form.email, password: form.password })
+      const authUser = await login({ email: form.email, password: form.password, role: form.role })
       const target = getDashboardPath(authUser.role)
       navigate(target)
     } catch (err) {
@@ -71,6 +72,26 @@ const Login = () => {
               onChange={handleChange}
             />
             {fieldErrors.email && <span className="form-error">{fieldErrors.email}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="role">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              className="form-select"
+              value={form.role}
+              onChange={handleChange}
+            >
+              <option value="">Select role</option>
+              <option value="PATIENT">PATIENT</option>
+              <option value="DOCTOR">DOCTOR</option>
+              <option value="PHARMACIST">PHARMACIST</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+            {fieldErrors.role && <span className="form-error">{fieldErrors.role}</span>}
           </div>
 
           <div className="form-group">

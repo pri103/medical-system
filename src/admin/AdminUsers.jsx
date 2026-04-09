@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { adminService } from '../api/adminService'
 
 const AdminUsers = () => {
-  const { users, setUsers } = useOutletContext()
+  const { users, fetchOverview } = useOutletContext()
   const [roleFilter, setRoleFilter] = useState('All')
 
   const filteredUsers = useMemo(
@@ -10,16 +11,14 @@ const AdminUsers = () => {
     [users, roleFilter],
   )
 
-  const toggleStatus = (id) => {
-    setUsers(
-      users.map((u) =>
-        u.id === id ? { ...u, status: u.status === 'Active' ? 'Inactive' : 'Active' } : u,
-      ),
-    )
+  const toggleStatus = async (id) => {
+    await adminService.toggleUserStatus(id)
+    await fetchOverview()
   }
 
-  const deleteUser = (id) => {
-    setUsers(users.filter((u) => u.id !== id))
+  const deleteUser = async (id) => {
+    await adminService.deleteUser(id)
+    await fetchOverview()
   }
 
   return (
@@ -28,8 +27,7 @@ const AdminUsers = () => {
         <div>
           <h2 className="page-title">User management</h2>
           <p className="page-subtitle">
-            Front‑end simulation of admin capabilities for managing doctors, patients,
-            pharmacists, and admins.
+            Manage doctors, patients, pharmacists, and admins via backend APIs.
           </p>
         </div>
         <div className="badge-pill">Accounts</div>

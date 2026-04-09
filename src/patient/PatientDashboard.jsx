@@ -76,8 +76,7 @@ const PatientDashboard = () => {
               </button>
             </div>
             <p className="form-helper" style={{ marginTop: '0.7rem' }}>
-              This dashboard is front‑end only. All counts and details are based on mock
-              data maintained in local state.
+              Dashboard metrics are loaded from backend APIs.
             </p>
           </div>
         </section>

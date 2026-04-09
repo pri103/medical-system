@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const Navbar = () => {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout, getDashboardPath, notice, setNotice } = useAuth()
 
   const isLoggedIn = !!user
@@ -21,6 +22,15 @@ const Navbar = () => {
     setOpen(false)
     navigate('/')
   }
+
+  useEffect(() => {
+    if (!notice) return
+    if (!['/login', '/register', '/verify-otp'].includes(location.pathname)) {
+      if (notice.toLowerCase().includes('verified') || notice.toLowerCase().includes('login')) {
+        setNotice('')
+      }
+    }
+  }, [location.pathname, notice, setNotice])
 
   return (
     <header className="navbar">

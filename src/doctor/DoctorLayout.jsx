@@ -11,6 +11,8 @@ const DoctorLayoutInner = () => {
     setPrescriptions,
     profile,
     setProfile,
+    saveProfile,
+    addPrescription,
   } = useDoctorData()
 
   return (
@@ -81,6 +83,8 @@ const DoctorLayoutInner = () => {
               setPrescriptions,
               profile,
               setProfile,
+              saveProfile,
+              addPrescription,
             }}
           />
         </section>

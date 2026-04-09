@@ -1,17 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import {
-  initialPharmacistPrescriptions,
-  initialPharmacistOrders,
-  initialPharmacistProfile,
-  medicationInfo,
-} from './pharmacistMockData'
+import { pharmacistService } from '../api/pharmacistService'
 
 const PharmacistLayout = () => {
-  const [prescriptions, setPrescriptions] = useState(initialPharmacistPrescriptions)
-  const [orders, setOrders] = useState(initialPharmacistOrders)
-  const [profile, setProfile] = useState(initialPharmacistProfile)
-  const [medications] = useState(medicationInfo)
+  const [prescriptions, setPrescriptions] = useState([])
+  const [orders, setOrders] = useState([])
+  const [profile, setProfile] = useState({})
+  const [medications, setMedications] = useState([])
+  const [error, setError] = useState('')
+
+  const fetchOverview = async () => {
+    setError('')
+    try {
+      const data = await pharmacistService.getOverview()
+      setPrescriptions(data.prescriptions || [])
+      setOrders(data.orders || [])
+      setProfile(data.profile || {})
+      setMedications(data.medications || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load pharmacist data')
+    }
+  }
+
+  useEffect(() => {
+    fetchOverview()
+  }, [])
 
   const pendingCount = prescriptions.filter((p) => p.status === 'To Verify').length
 
@@ -77,6 +90,7 @@ const PharmacistLayout = () => {
         </aside>
 
         <section className="patient-content">
+          {error && <p className="form-error">{error}</p>}
           <Outlet
             context={{
               prescriptions,
@@ -86,6 +100,7 @@ const PharmacistLayout = () => {
               profile,
               setProfile,
               medications,
+              fetchOverview,
             }}
           />
         </section>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 
 const DoctorPrescriptions = () => {
-  const { prescriptions, setPrescriptions } = useOutletContext()
+  const { prescriptions, addPrescription } = useOutletContext()
   const [form, setForm] = useState({
     patientName: '',
     diagnosis: '',
@@ -16,16 +16,10 @@ const DoctorPrescriptions = () => {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const newPrescription = {
-      id: prescriptions.length + 1,
-      ...form,
-    }
-    setPrescriptions([...prescriptions, newPrescription])
-    setMessage(
-      `E‑prescription created for ${form.patientName || 'patient'} (stored in state only).`,
-    )
+    await addPrescription(form)
+    setMessage(`E‑prescription created for ${form.patientName || 'patient'}.`)
     setForm({
       patientName: '',
       diagnosis: '',
@@ -41,7 +35,7 @@ const DoctorPrescriptions = () => {
           <h2 className="page-title">Create e‑prescription</h2>
           <p className="page-subtitle">
             Fill in patient, diagnosis, medicines, and instructions. Prescriptions are
-            stored in local React state for this demo.
+            saved through backend API.
           </p>
         </div>
       </div>
@@ -109,7 +103,7 @@ const DoctorPrescriptions = () => {
                   Submit prescription
                 </button>
                 <span className="form-helper">
-                  No backend is used – this is purely a UI and state management example.
+                  Saved to backend and visible to pharmacist module.
                 </span>
               </div>
             </form>

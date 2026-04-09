@@ -4,12 +4,13 @@ import { useAuth } from '../context/AuthContext'
 
 const Register = () => {
   const navigate = useNavigate()
-  const { register, getDashboardPath, setNotice } = useAuth()
+  const { register, setNotice } = useAuth()
   const [form, setForm] = useState({
     name: '',
     email: '',
-    role: 'patient',
+    role: '',
     password: '',
+    confirmPassword: '',
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -28,8 +29,14 @@ const Register = () => {
     if (form.name.trim().length < 2) nextErrors.name = 'Name must be at least 2 characters.'
     if (!form.email.trim()) nextErrors.email = 'Email is required.'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) nextErrors.email = 'Invalid email format.'
+    if (!form.role) nextErrors.role = 'Role is required.'
     if (!form.password.trim()) nextErrors.password = 'Password is required.'
     if (form.password.length < 6) nextErrors.password = 'Password must be at least 6 characters.'
+    if (!form.confirmPassword.trim()) {
+      nextErrors.confirmPassword = 'Confirm password is required.'
+    } else if (form.confirmPassword !== form.password) {
+      nextErrors.confirmPassword = 'Passwords do not match.'
+    }
     setFieldErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
   }
@@ -40,14 +47,14 @@ const Register = () => {
     setError('')
     setSubmitting(true)
     try {
-      const authUser = await register({
+      await register({
         name: form.name,
         email: form.email,
         password: form.password,
         role: form.role,
       })
-      const target = getDashboardPath(authUser.role)
-      navigate(target)
+      setNotice('Registration successful. Verify OTP sent to your email.')
+      navigate('/verify-otp', { state: { email: form.email } })
     } catch (err) {
       setNotice('Registration failed. Please try again.')
       setError(err?.message || 'Could not register. Try a different email.')
@@ -62,7 +69,7 @@ const Register = () => {
         <div>
           <h2 className="page-title">Create your account</h2>
           <p className="page-subtitle">
-            Choose your role to get the right experience across the virtual clinic.
+            Create an account and verify your email with OTP.
           </p>
         </div>
       </div>
@@ -112,11 +119,13 @@ const Register = () => {
               value={form.role}
               onChange={handleChange}
             >
-              <option value="patient">Patient</option>
-              <option value="doctor">Doctor</option>
-              <option value="pharmacist">Pharmacist</option>
-              <option value="admin">Admin</option>
+              <option value="">Select role</option>
+              <option value="PATIENT">PATIENT</option>
+              <option value="DOCTOR">DOCTOR</option>
+              <option value="PHARMACIST">PHARMACIST</option>
+              <option value="ADMIN">ADMIN</option>
             </select>
+            {fieldErrors.role && <span className="form-error">{fieldErrors.role}</span>}
           </div>
 
           <div className="form-group">
@@ -133,6 +142,24 @@ const Register = () => {
               onChange={handleChange}
             />
             {fieldErrors.password && <span className="form-error">{fieldErrors.password}</span>}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="confirmPassword">
+              Confirm password
+            </label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              className="form-input"
+              placeholder="••••••••"
+              value={form.confirmPassword}
+              onChange={handleChange}
+            />
+            {fieldErrors.confirmPassword && (
+              <span className="form-error">{fieldErrors.confirmPassword}</span>
+            )}
           </div>
 
           <div className="form-footer">

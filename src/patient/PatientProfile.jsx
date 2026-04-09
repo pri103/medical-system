@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 
 const PatientProfile = () => {
-  const { profile, setProfile } = useOutletContext()
+  const { profile, saveProfile, changePassword } = useOutletContext()
   const [form, setForm] = useState(profile)
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -10,6 +10,10 @@ const PatientProfile = () => {
     confirmPassword: '',
   })
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    setForm(profile)
+  }, [profile])
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target
@@ -21,20 +25,21 @@ const PatientProfile = () => {
     setPasswordForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleProfileSubmit = (e) => {
+  const handleProfileSubmit = async (e) => {
     e.preventDefault()
-    setProfile(form)
-    setMessage('Profile updated in local state (demo only).')
+    await saveProfile(form)
+    setMessage('Profile updated successfully.')
   }
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault()
+    await changePassword(passwordForm)
     setPasswordForm({
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
     })
-    setMessage('Password change simulated (no real auth).')
+    setMessage('Password change request submitted.')
   }
 
   return (
@@ -43,8 +48,7 @@ const PatientProfile = () => {
         <div>
           <h2 className="page-title">Profile</h2>
           <p className="page-subtitle">
-            Update your personal details and simulate a password change. All changes stay
-            in the browser only.
+            Update your personal details and password with backend integration.
           </p>
         </div>
       </div>
@@ -146,7 +150,7 @@ const PatientProfile = () => {
                   Save changes
                 </button>
                 <span className="form-helper">
-                  Saved only in React state – ideal for academic demonstration.
+                  Saved in database via API.
                 </span>
               </div>
             </form>
@@ -155,7 +159,7 @@ const PatientProfile = () => {
 
         <section className="card">
           <div className="card-header">
-            <h3 className="card-title">Change password (UI only)</h3>
+            <h3 className="card-title">Change password</h3>
           </div>
           <div className="card-body">
             <form className="form" onSubmit={handlePasswordSubmit}>
@@ -204,7 +208,7 @@ const PatientProfile = () => {
                   Change password
                 </button>
                 <span className="form-helper">
-                  This does not touch any real backend – it is purely a UI flow.
+                  This is a basic backend-connected flow for demo.
                 </span>
               </div>
             </form>

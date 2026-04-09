@@ -10,7 +10,7 @@ const PatientLabReports = () => {
           <h2 className="page-title">Lab reports</h2>
           <p className="page-subtitle">
             Track your diagnostic tests, see which reports are available, and open them
-            in this simulated UI.
+            in a simple clinical view.
           </p>
         </div>
       </div>
@@ -18,7 +18,7 @@ const PatientLabReports = () => {
       <section className="card">
         <div className="card-header">
           <h3 className="card-title">Lab report list</h3>
-          <span className="card-meta">Mock data only</span>
+          <span className="card-meta">Backend data</span>
         </div>
         <div className="card-body">
           <div className="table-wrapper">
@@ -53,8 +53,8 @@ const PatientLabReports = () => {
                           // eslint-disable-next-line no-alert
                           alert(
                             r.status === 'Available'
-                              ? 'Opening lab report (demo only).'
-                              : 'Report not yet available (demo only).',
+                              ? 'Opening lab report.'
+                              : 'Report not yet available.',
                           )
                         }}
                       >

@@ -9,8 +9,7 @@ const PatientMedicalRecords = () => {
         <div>
           <h2 className="page-title">Medical records</h2>
           <p className="page-subtitle">
-            Review your consultation history, diagnoses, and doctor notes. Reports are
-            simulated as downloadable documents.
+            Review your consultation history, diagnoses, and doctor notes.
           </p>
         </div>
       </div>
@@ -18,7 +17,7 @@ const PatientMedicalRecords = () => {
       <section className="card">
         <div className="card-header">
           <h3 className="card-title">Consultation history</h3>
-          <span className="card-meta">Sample data</span>
+          <span className="card-meta">Backend data</span>
         </div>
         <div className="card-body">
           <div className="table-wrapper">
@@ -45,7 +44,7 @@ const PatientMedicalRecords = () => {
                         className="btn btn-sm btn-outline"
                         onClick={() => {
                           // eslint-disable-next-line no-alert
-                          alert('Downloading report (demo only).')
+                          alert('Record download endpoint can be added if required.')
                         }}
                       >
                         Download report

@@ -1,10 +1,36 @@
-import { useAppointments } from '../context/AppointmentsContext'
+import { useEffect, useState } from 'react'
+import { doctorService } from '../api/doctorService'
 
 const DoctorAppointments = () => {
-  const { appointments, setAppointments } = useAppointments()
+  const [appointments, setAppointments] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const updateStatus = (id, status) => {
-    setAppointments(appointments.map((a) => (a.id === id ? { ...a, status } : a)))
+  const fetchAppointments = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await doctorService.listAppointments()
+      setAppointments(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setError(err.message || 'Failed to load doctor appointments')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAppointments()
+  }, [])
+
+  const updateStatus = async (id, status) => {
+    setError('')
+    try {
+      const updated = await doctorService.updateAppointmentStatus(id, status)
+      setAppointments((prev) => prev.map((a) => (a.id === id ? updated : a)))
+    } catch (err) {
+      setError(err.message || 'Failed to update appointment status')
+    }
   }
 
   const badgeClass = (status) => {
@@ -22,7 +48,7 @@ const DoctorAppointments = () => {
           <h2 className="page-title">Appointments</h2>
           <p className="page-subtitle">
             Manage your scheduled consultations, join calls, and mark visits as
-            completed. All state lives only in the browser.
+            completed.
           </p>
         </div>
       </div>
@@ -32,11 +58,14 @@ const DoctorAppointments = () => {
           <h3 className="card-title">Scheduled appointments</h3>
         </div>
         <div className="card-body">
+          {loading && <p className="form-helper">Loading appointments...</p>}
+          {error && <p className="form-error">{error}</p>}
           <div className="table-wrapper">
             <table className="table">
               <thead>
                 <tr>
                   <th>Patient</th>
+                  <th>Date</th>
                   <th>Time</th>
                   <th>Type</th>
                   <th>Status</th>
@@ -46,7 +75,8 @@ const DoctorAppointments = () => {
               <tbody>
                 {appointments.map((a) => (
                   <tr key={a.id}>
-                    <td>{a.patient}</td>
+                    <td>{a.patientName}</td>
+                    <td>{a.date}</td>
                     <td>{a.time}</td>
                     <td>{a.type}</td>
                     <td>
@@ -58,8 +88,6 @@ const DoctorAppointments = () => {
                           type="button"
                           className="btn btn-sm btn-primary"
                           onClick={() => {
-                            // eslint-disable-next-line no-alert
-                            alert('Joining consultation (demo only).')
                             updateStatus(a.id, 'In Progress')
                           }}
                         >

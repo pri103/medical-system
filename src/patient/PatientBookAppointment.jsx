@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAppointments } from '../context/AppointmentsContext'
+import { appointmentService } from '../api/appointmentService'
 
 const PatientBookAppointment = () => {
   const { createAppointment, error, success, setError, setSuccess } = useAppointments()
+  const [doctorOptions, setDoctorOptions] = useState([])
   const [form, setForm] = useState({
-    doctor: 'Dr. Mehta',
+    doctor: '',
+    doctorEmail: '',
     specialization: 'General Physician',
     date: '',
     time: '10:00',
@@ -15,9 +18,37 @@ const PatientBookAppointment = () => {
   const [submitting, setSubmitting] = useState(false)
   const minDate = useMemo(() => new Date().toISOString().split('T')[0], [])
 
+  useEffect(() => {
+    const loadDoctors = async () => {
+      try {
+        const doctors = await appointmentService.listDoctors()
+        setDoctorOptions(Array.isArray(doctors) ? doctors : [])
+        if (doctors?.length) {
+          setForm((prev) => ({
+            ...prev,
+            doctor: doctors[0].name,
+            doctorEmail: doctors[0].email,
+          }))
+        }
+      } catch (err) {
+        setError(err.message || 'Could not load doctor list')
+      }
+    }
+    loadDoctors()
+  }, [setError])
+
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    if (name === 'doctor') {
+      const selected = doctorOptions.find((d) => d.name === value)
+      setForm((prev) => ({
+        ...prev,
+        doctor: value,
+        doctorEmail: selected?.email || '',
+      }))
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }))
+    }
     setFieldErrors((prev) => ({ ...prev, [name]: '' }))
     setError('')
     setSuccess('')
@@ -25,6 +56,7 @@ const PatientBookAppointment = () => {
 
   const validate = () => {
     const nextErrors = {}
+    if (!form.doctorEmail) nextErrors.doctor = 'Doctor is required.'
     if (!form.date) nextErrors.date = 'Date is required.'
     if (!form.time) nextErrors.time = 'Time is required.'
     if (!form.symptoms.trim()) nextErrors.symptoms = 'Symptoms are required.'
@@ -41,6 +73,7 @@ const PatientBookAppointment = () => {
     try {
       await createAppointment({
         doctor: form.doctor,
+        doctorEmail: form.doctorEmail,
         specialization: form.specialization,
         appointmentDate: form.date,
         appointmentTime: form.time,
@@ -83,11 +116,14 @@ const PatientBookAppointment = () => {
                   value={form.doctor}
                   onChange={handleChange}
                 >
-                  <option value="Dr. Mehta">Dr. Mehta</option>
-                  <option value="Dr. Kapoor">Dr. Kapoor</option>
-                  <option value="Dr. Iyer">Dr. Iyer</option>
-                  <option value="Dr. Rao">Dr. Rao</option>
+                  {!doctorOptions.length && <option value="">No doctors available</option>}
+                  {doctorOptions.map((doctorOption) => (
+                    <option key={doctorOption.email} value={doctorOption.name}>
+                      {doctorOption.name}
+                    </option>
+                  ))}
                 </select>
+                {fieldErrors.doctor && <span className="form-error">{fieldErrors.doctor}</span>}
               </div>
 
               <div className="form-group">

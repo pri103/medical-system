@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import VerifyOtp from './pages/VerifyOtp'
 import NotFound from './pages/NotFound'
 import PatientLayout from './patient/PatientLayout'
 import PatientDashboard from './patient/PatientDashboard'
@@ -49,6 +50,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/verify-otp" element={<VerifyOtp />} />
               <Route
                 path="/doctor"
                 element={

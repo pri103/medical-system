@@ -1,20 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 
 const DoctorProfile = () => {
-  const { profile, setProfile } = useOutletContext()
+  const { profile, saveProfile } = useOutletContext()
   const [form, setForm] = useState(profile)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    setForm(profile)
+  }, [profile])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setProfile(form)
-    setMessage('Doctor profile updated in local state (demo only).')
+    await saveProfile(form)
+    setMessage('Doctor profile updated successfully.')
   }
 
   return (
@@ -23,8 +27,7 @@ const DoctorProfile = () => {
         <div>
           <h2 className="page-title">Doctor profile</h2>
           <p className="page-subtitle">
-            Review and update your professional details. All updates remain in the
-            browser.
+            Review and update your professional details using backend API.
           </p>
         </div>
       </div>
@@ -102,7 +105,7 @@ const DoctorProfile = () => {
                 Save profile
               </button>
               <span className="form-helper">
-                This profile is stored only in React state for demo purposes.
+                Changes are saved in database through Spring Boot.
               </span>
             </div>
           </form>

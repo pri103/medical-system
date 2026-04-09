@@ -1,15 +1,21 @@
 import { useOutletContext } from 'react-router-dom'
+import { adminService } from '../api/adminService'
 
 const AdminSettings = () => {
   const { settings, setSettings } = useOutletContext()
 
-  const handleToggleMaintenance = () => {
-    setSettings({ ...settings, maintenanceMode: !settings.maintenanceMode })
+  const handleToggleMaintenance = async () => {
+    const updated = await adminService.updateSettings({
+      ...settings,
+      maintenanceMode: !settings.maintenanceMode,
+    })
+    setSettings(updated)
   }
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value } = e.target
-    setSettings({ ...settings, [name]: Number(value) })
+    const updated = await adminService.updateSettings({ ...settings, [name]: Number(value) })
+    setSettings(updated)
   }
 
   return (
@@ -18,8 +24,7 @@ const AdminSettings = () => {
         <div>
           <h2 className="page-title">Platform settings</h2>
           <p className="page-subtitle">
-            Simulated configuration panel for appointment behaviour and security
-            guidelines.
+            Basic configuration panel connected to backend settings API.
           </p>
         </div>
       </div>

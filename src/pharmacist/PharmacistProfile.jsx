@@ -1,20 +1,26 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { pharmacistService } from '../api/pharmacistService'
 
 const PharmacistProfile = () => {
-  const { profile, setProfile } = useOutletContext()
+  const { profile, fetchOverview } = useOutletContext()
   const [form, setForm] = useState(profile)
   const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    setForm(profile)
+  }, [profile])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setProfile(form)
-    setMessage('Pharmacy profile updated in local state (demo only).')
+    await pharmacistService.updateProfile(form)
+    await fetchOverview()
+    setMessage('Pharmacy profile updated successfully.')
   }
 
   return (
@@ -24,7 +30,7 @@ const PharmacistProfile = () => {
           <h2 className="page-title">Pharmacy profile</h2>
           <p className="page-subtitle">
             Update pharmacy details, contact information, and license number as part of
-            this simulated module.
+            this backend-connected module.
           </p>
         </div>
       </div>
@@ -88,7 +94,7 @@ const PharmacistProfile = () => {
                 Save profile
               </button>
               <span className="form-helper">
-                This is a front‑end only profile editor suitable for academic demos.
+                Changes are saved through Spring Boot API.
               </span>
             </div>
           </form>

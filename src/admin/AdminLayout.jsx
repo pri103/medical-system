@@ -1,17 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import {
-  initialAdminUsers,
-  initialAdminAppointments,
-  initialAdminSettings,
-  initialAdminLogs,
-} from './adminMockData'
+import { adminService } from '../api/adminService'
 
 const AdminLayout = () => {
-  const [users, setUsers] = useState(initialAdminUsers)
-  const [appointments] = useState(initialAdminAppointments)
-  const [settings, setSettings] = useState(initialAdminSettings)
-  const [logs] = useState(initialAdminLogs)
+  const [users, setUsers] = useState([])
+  const [appointments, setAppointments] = useState([])
+  const [settings, setSettings] = useState({
+    maintenanceMode: false,
+    appointmentDuration: 20,
+    maxDailyAppointments: 40,
+  })
+  const [logs, setLogs] = useState([])
+  const [error, setError] = useState('')
+
+  const fetchOverview = async () => {
+    setError('')
+    try {
+      const data = await adminService.getOverview()
+      setUsers(data.users || [])
+      setAppointments(data.appointments || [])
+      setSettings(data.settings || {})
+      setLogs(data.logs || [])
+    } catch (err) {
+      setError(err.message || 'Failed to load admin data')
+    }
+  }
+
+  useEffect(() => {
+    fetchOverview()
+  }, [])
 
   return (
     <div className="admin-shell">
@@ -72,6 +89,7 @@ const AdminLayout = () => {
         </aside>
 
         <section className="patient-content">
+          {error && <p className="form-error">{error}</p>}
           <Outlet
             context={{
               users,
@@ -80,6 +98,7 @@ const AdminLayout = () => {
               settings,
               setSettings,
               logs,
+              fetchOverview,
             }}
           />
         </section>

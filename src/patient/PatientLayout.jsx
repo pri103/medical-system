@@ -15,6 +15,8 @@ const PatientLayoutInner = () => {
     setLabReports,
     profile,
     setProfile,
+    saveProfile,
+    changePassword,
   } = usePatientData()
 
   return (
@@ -113,6 +115,8 @@ const PatientLayoutInner = () => {
               setLabReports,
               profile,
               setProfile,
+              saveProfile,
+              changePassword,
             }}
           />
         </section>

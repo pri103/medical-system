@@ -1,10 +1,12 @@
 import { useOutletContext } from 'react-router-dom'
+import { pharmacistService } from '../api/pharmacistService'
 
 const PharmacistPrescriptions = () => {
-  const { prescriptions, setPrescriptions } = useOutletContext()
+  const { prescriptions, fetchOverview } = useOutletContext()
 
-  const updateStatus = (id, status) => {
-    setPrescriptions(prescriptions.map((p) => (p.id === id ? { ...p, status } : p)))
+  const updateStatus = async (id, status) => {
+    await pharmacistService.updatePrescriptionStatus(id, status)
+    await fetchOverview()
   }
 
   const badgeClass = (status) => {

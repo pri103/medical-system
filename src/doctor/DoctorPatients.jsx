@@ -10,7 +10,7 @@ const DoctorPatients = () => {
           <h2 className="page-title">Patient records</h2>
           <p className="page-subtitle">
             Explore your patient panel, their diagnosis history, and notes in a
-            read‑only, front‑end simulation.
+            clean read-only clinical view.
           </p>
         </div>
       </div>
